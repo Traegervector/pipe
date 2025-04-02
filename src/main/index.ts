@@ -20,14 +20,14 @@ import electronUpdater, { type AppUpdater, type UpdateInfo } from 'electron-upda
 export function getAutoUpdater(): AppUpdater {
   // Using destructuring to access autoUpdater due to the CommonJS module of 'electron-updater'.
   // It is a workaround for ESM compatibility issues, see https://github.com/electron-userland/electron-builder/issues/7976.
-  const { autoUpdater } = electronUpdater;
+  var { autoUpdater } = electronUpdater;
   return autoUpdater;
 }
-const autoUpdater = getAutoUpdater();
+var autoUpdater = getAutoUpdater();
 
-const exec = child_process.exec;
-const store = new Store();
-// const service = new Service();
+var exec = child_process.exec;
+var store = new Store();
+// var service = new Service();
 
 // 代理
 let PROXY_SERVER: AnyProxy.ProxyServer;
@@ -108,7 +108,7 @@ app.whenReady().then(() => {
   });
   // 选择路径
   ipcMain.on('show-open-dialog', (event, options: OpenDialogOptions, callbackMsg: string) => {
-    const _win = BrowserWindow.fromWebContents(event.sender);
+    var _win = BrowserWindow.fromWebContents(event.sender);
     if (_win) {
       dialog
         .showOpenDialog(_win, options)
@@ -126,7 +126,7 @@ app.whenReady().then(() => {
   });
   // 消息弹框
   ipcMain.on('show-message-box', (event, options: MessageBoxOptions) => {
-    const _win = BrowserWindow.fromWebContents(event.sender);
+    var _win = BrowserWindow.fromWebContents(event.sender);
     if (_win) {
       dialog.showMessageBox(_win, options);
     }
@@ -153,12 +153,12 @@ app.whenReady().then(() => {
   // 生成epub
   ipcMain.on('create-epub', (_event, options: any) => {
     options.tmpPath = store.get('tmpPath');
-    const epubWorker = createEpubWorker({
+    var epubWorker = createEpubWorker({
       workerData: options
     });
 
     epubWorker.on('message', (message) => {
-      const nwResp: NodeWorkerResponse = message;
+      var nwResp: NodeWorkerResponse = message;
       switch (nwResp.code) {
         case NwrEnum.SUCCESS:
         case NwrEnum.FAIL:
@@ -204,7 +204,7 @@ function createCAFile() {
   if (!AnyProxy.utils.certMgr.ifRootCAFileExists()) {
     AnyProxy.utils.certMgr.generateRootCA((error, keyPath) => {
       if (!error) {
-        const certDir = path.dirname(keyPath);
+        var certDir = path.dirname(keyPath);
         logger.info('CA证书创建成功，路径：', certDir);
         // 安装证书
         installCAFile(path.join(certDir, 'rootCA.crt'));
@@ -274,7 +274,7 @@ function createDlWorker(dlEvent: DlEventEnum, data?) {
   });
 
   worker.on('message', (message) => {
-    const nwResp: NodeWorkerResponse = message;
+    var nwResp: NodeWorkerResponse = message;
     switch (nwResp.code) {
       case NwrEnum.SUCCESS:
       case NwrEnum.FAIL:
@@ -302,20 +302,20 @@ function createDlWorker(dlEvent: DlEventEnum, data?) {
 }
 
 async function html2Pdf(pdfInfo: PdfInfo) {
-  const pdfWindow = new BrowserWindow({
+  var pdfWindow = new BrowserWindow({
     show: false,
     width: 1000,
     height: 800
   });
 
-  const htmlPath = path.join(pdfInfo.savePath, 'pdf.html');
+  var htmlPath = path.join(pdfInfo.savePath, 'pdf.html');
   pdfWindow.loadFile(htmlPath);
 
   pdfWindow.webContents.on('did-finish-load', () => {
     pdfWindow.webContents
       .printToPDF({})
       .then((data) => {
-        const fileName = pdfInfo.fileName || 'index';
+        var fileName = pdfInfo.fileName || 'index';
         fs.writeFileSync(path.join(pdfInfo.savePath, `${fileName}.pdf`), data);
         outputLog(`【${pdfInfo.title}】保存PDF完成`, true);
       })
@@ -397,7 +397,7 @@ async function stopMonitorLimitArticle() {
  * 创建代理
  */
 function createProxy(): AnyProxy.ProxyServer {
-  const options: AnyProxy.ProxyOptions = {
+  var options: AnyProxy.ProxyOptions = {
     port: 8001,
     forceProxyHttps: true,
     silent: true,
@@ -406,14 +406,14 @@ function createProxy(): AnyProxy.ProxyServer {
       beforeSendResponse(requestDetail, responseDetail) {
         // 批量下载
         if (DL_TYPE == DlEventEnum.BATCH_WEB && requestDetail.url.indexOf('https://mp.weixin.qq.com/mp/getbizbanner') == 0) {
-          const uin = HttpUtil.getQueryVariable(requestDetail.url, 'uin');
-          const biz = HttpUtil.getQueryVariable(requestDetail.url, '__biz');
-          const key = HttpUtil.getQueryVariable(requestDetail.url, 'key');
-          const passTicket = HttpUtil.getQueryVariable(requestDetail.url, 'pass_ticket');
+          var uin = HttpUtil.getQueryVariable(requestDetail.url, 'uin');
+          var biz = HttpUtil.getQueryVariable(requestDetail.url, '__biz');
+          var key = HttpUtil.getQueryVariable(requestDetail.url, 'key');
+          var passTicket = HttpUtil.getQueryVariable(requestDetail.url, 'pass_ticket');
           if (uin && biz && key) {
             GZH_INFO = new GzhInfo(biz, key, uin);
             GZH_INFO.passTicket = passTicket;
-            const headers = requestDetail.requestOptions.headers;
+            var headers = requestDetail.requestOptions.headers;
             if (headers) {
               GZH_INFO.Host = headers['Host'] as string;
               GZH_INFO.Cookie = headers['Cookie'] as string;
@@ -451,23 +451,23 @@ function createProxy(): AnyProxy.ProxyServer {
         }
         // 单条下载
         if (DL_TYPE == DlEventEnum.BATCH_SELECT && requestDetail.url.indexOf('https://mp.weixin.qq.com/mp/geticon') == 0) {
-          const headers = requestDetail.requestOptions.headers;
+          var headers = requestDetail.requestOptions.headers;
           if (headers) {
-            const referer = headers['Referer'] as string;
-            const uin = HttpUtil.getQueryVariable(referer, 'uin');
-            const biz = HttpUtil.getQueryVariable(referer, '__biz');
-            const key = HttpUtil.getQueryVariable(referer, 'key');
-            const mid = HttpUtil.getQueryVariable(referer, 'mid');
-            const sn = HttpUtil.getQueryVariable(referer, 'sn');
-            const chksm = HttpUtil.getQueryVariable(referer, 'chksm');
-            const idx = HttpUtil.getQueryVariable(referer, 'idx');
-            const gzhInfo = new GzhInfo(biz, key, uin);
+            var referer = headers['Referer'] as string;
+            var uin = HttpUtil.getQueryVariable(referer, 'uin');
+            var biz = HttpUtil.getQueryVariable(referer, '__biz');
+            var key = HttpUtil.getQueryVariable(referer, 'key');
+            var mid = HttpUtil.getQueryVariable(referer, 'mid');
+            var sn = HttpUtil.getQueryVariable(referer, 'sn');
+            var chksm = HttpUtil.getQueryVariable(referer, 'chksm');
+            var idx = HttpUtil.getQueryVariable(referer, 'idx');
+            var gzhInfo = new GzhInfo(biz, key, uin);
             gzhInfo.Cookie = headers['Cookie'] as string;
             gzhInfo.UserAgent = headers['User-Agent'] as string;
 
-            const articleUrl = `http://mp.weixin.qq.com/s?__biz=${biz}&amp;mid=${mid}&amp;idx=${idx}&amp;sn=${sn}&amp;chksm=${chksm}&amp;scene=27#wechat_redirect`;
+            var articleUrl = `http://mp.weixin.qq.com/s?__biz=${biz}&amp;mid=${mid}&amp;idx=${idx}&amp;sn=${sn}&amp;chksm=${chksm}&amp;scene=27#wechat_redirect`;
 
-            const articleInfo = new ArticleInfo(null, null, '');
+            var articleInfo = new ArticleInfo(null, null, '');
             articleInfo.contentUrl = articleUrl;
             articleInfo.gzhInfo = gzhInfo;
 
@@ -481,7 +481,7 @@ function createProxy(): AnyProxy.ProxyServer {
       }
     }
   };
-  const proxyServer = new AnyProxy.ProxyServer(options);
+  var proxyServer = new AnyProxy.ProxyServer(options);
 
   // proxyServer.on('ready', () => {
   //   outputLog(`代理开启成功，准备批量下载，请在微信打开任意一篇需要批量下载的公号的文章`);
@@ -499,7 +499,7 @@ function createProxy(): AnyProxy.ProxyServer {
 async function testMysqlConnection() {
   if (1 != store.get('dlMysql') && 'db' != store.get('dlSource')) return;
 
-  const CONNECTION = mysql.createConnection({
+  var CONNECTION = mysql.createConnection({
     host: <string>store.get('mysqlHost'),
     port: <number>store.get('mysqlPort'),
     user: <string>store.get('mysqlUser'),
@@ -507,7 +507,7 @@ async function testMysqlConnection() {
     database: <string>store.get('mysqlDatabase'),
     charset: 'utf8mb4'
   });
-  const sql = 'show tables';
+  var sql = 'show tables';
   CONNECTION.query(sql, (err) => {
     if (err) {
       logger.error('mysql连接失败', err);
@@ -547,7 +547,7 @@ async function outputEpubLog(msg: string, append = false, flgHtml = false) {
  * 第一次运行，默认设置
  */
 function setDefaultSetting() {
-  const default_setting: DownloadOption = {
+  var default_setting: DownloadOption = {
     firstRun: false,
     // 下载来源
     dlSource: 'web',
@@ -594,13 +594,13 @@ function setDefaultSetting() {
     mysqlPort: 3306
   };
 
-  for (const i in default_setting) {
+  for (var i in default_setting) {
     sotreSetNotExit(i, default_setting[i]);
   }
 }
 
 function sotreSetNotExit(key, value): boolean {
-  const oldValue = store.get(key);
+  var oldValue = store.get(key);
   if (oldValue === '' || oldValue === null || oldValue === undefined) {
     store.set(key, value);
     logger.info('setting', key, value);
@@ -614,15 +614,15 @@ function sotreSetNotExit(key, value): boolean {
  * 获取设置中心页面的配置
  */
 function loadDownloadOption(): DownloadOption {
-  const downloadOption = new DownloadOption();
-  for (const key in downloadOption) {
+  var downloadOption = new DownloadOption();
+  for (var key in downloadOption) {
     downloadOption[key] = store.get(key);
   }
   return downloadOption;
 }
 // 获取nodeWorker的配置
 function loadWorkerData(dlEvent: DlEventEnum, data?) {
-  const connectionConfig = {
+  var connectionConfig = {
     host: <string>store.get('mysqlHost'),
     port: <number>store.get('mysqlPort'),
     user: <string>store.get('mysqlUser'),
@@ -652,7 +652,7 @@ function loadWorkerData(dlEvent: DlEventEnum, data?) {
 // });
 
 // 定义返回给渲染层的相关提示文案
-const updateMessage = {
+var updateMessage = {
   error: { code: 1, msg: '检查更新出错' },
   checking: { code: 2, msg: '正在检查更新……' },
   updateAva: { code: 3, msg: '检测到新版本，正在下载……' },
@@ -678,7 +678,7 @@ autoUpdater.on('checking-for-update', () => {
 });
 // 检测到可以更新时
 autoUpdater.on('update-available', (releaseInfo: UpdateInfo) => {
-  const releaseNotes = releaseInfo.releaseNotes;
+  var releaseNotes = releaseInfo.releaseNotes;
   let releaseContent = '';
   if (releaseNotes) {
     if (typeof releaseNotes === 'string') {
