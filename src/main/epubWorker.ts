@@ -8,26 +8,26 @@ import * as path from 'path';
 
 import { NodeWorkerResponse, NwrEnum } from './service';
 
-const port = parentPort;
+var port = parentPort;
 if (!port) throw new Error('IllegalState');
 
 // epub文件名
-const title: string = workerData.title;
+var title: string = workerData.title;
 // 数据来源文件夹
-const epubDataPath: string = workerData.epubDataPath;
+var epubDataPath: string = workerData.epubDataPath;
 // 封面图片
-const epubCover: string = workerData.epubCover && workerData.epubCover.length > 0 ? workerData.epubCover : undefined;
+var epubCover: string = workerData.epubCover && workerData.epubCover.length > 0 ? workerData.epubCover : undefined;
 // 缓存路径
-const tmpPath: string = workerData.tmpPath;
+var tmpPath: string = workerData.tmpPath;
 
 // 接收消息，执行任务
 port.on('message', async (message: NodeWorkerResponse) => {
   if (message.code == NwrEnum.START) {
     resp(NwrEnum.SUCCESS, '正在生成Epub，开始获取文章...');
 
-    const limitCount = 666;
+    var limitCount = 666;
     // 遍历文件夹，获取文章
-    const htmlArr: string[] = [];
+    var htmlArr: string[] = [];
     listHtmlFile(epubDataPath, htmlArr, 0);
     resp(NwrEnum.SUCCESS, `已获取到${htmlArr.length}篇文章，开始转换...`);
 
@@ -38,16 +38,16 @@ port.on('message', async (message: NodeWorkerResponse) => {
         htmlArr.length = limitCount;
       }
 
-      const epubItemArr: EpubContentOptions[] = [];
-      for (const htmlPath of htmlArr) {
-        const itemData = await getEpubItemData(htmlPath);
+      var epubItemArr: EpubContentOptions[] = [];
+      for (var htmlPath of htmlArr) {
+        var itemData = await getEpubItemData(htmlPath);
         epubItemArr.push(itemData);
         resp(NwrEnum.SUCCESS, `【${itemData.title}】转换完成`);
       }
 
       resp(NwrEnum.SUCCESS, '开始创建Epub');
 
-      const option: EpubOptions = {
+      var option: EpubOptions = {
         title: title,
         description: 'created by wechatDownload',
         tocTitle: '目录',
@@ -57,8 +57,8 @@ port.on('message', async (message: NodeWorkerResponse) => {
         content: epubItemArr
       };
 
-      const savePath = path.join(epubDataPath, title + '.epub');
-      const epub = new EPub(option, savePath);
+      var savePath = path.join(epubDataPath, title + '.epub');
+      var epub = new EPub(option, savePath);
 
       epub
         .render()
@@ -90,10 +90,10 @@ port.addListener('close', () => {
  * @param inLevel 递归层级
  */
 function listHtmlFile(dirPath: string, htmlArr: string[], inLevel: number) {
-  const files = fs.readdirSync(dirPath);
+  var files = fs.readdirSync(dirPath);
   files.forEach((file) => {
-    const filePath = path.join(dirPath, file);
-    const stats = fs.statSync(filePath);
+    var filePath = path.join(dirPath, file);
+    var stats = fs.statSync(filePath);
 
     if (stats.isDirectory()) {
       if (inLevel < 3) {
@@ -112,8 +112,8 @@ function listHtmlFile(dirPath: string, htmlArr: string[], inLevel: number) {
  * @param htmlPath html文件路径
  */
 async function getEpubItemData(htmlPath: string): Promise<EpubContentOptions> {
-  const htmlStr = fs.readFileSync(htmlPath, 'utf8');
-  const dom = new JSDOM(htmlStr, { runScripts: 'dangerously' });
+  var htmlStr = fs.readFileSync(htmlPath, 'utf8');
+  var dom = new JSDOM(htmlStr, { runScripts: 'dangerously' });
   // 等待页面渲染完成
   await new Promise((resolve, reject) => {
     dom.window.addEventListener('load', () => {
@@ -125,15 +125,15 @@ async function getEpubItemData(htmlPath: string): Promise<EpubContentOptions> {
     }, 2000);
   });
 
-  const folderPath = path.dirname(htmlPath);
+  var folderPath = path.dirname(htmlPath);
   // 处理html内容，删除标题和js，将相对路径图片转成绝对路径
-  const $ = cheerio.load(dom.serialize());
+  var $ = cheerio.load(dom.serialize());
   $('script').remove();
   $('h1').remove();
-  const srcArr = $('[src]');
+  var srcArr = $('[src]');
   for (let i = 0; i < srcArr.length; i++) {
-    const $ele = $(srcArr[i]);
-    const src = $ele.attr('src');
+    var $ele = $(srcArr[i]);
+    var src = $ele.attr('src');
     if (src && src.length > 0) {
       if (!src.startsWith('http')) {
         // 获取相对路径
@@ -142,7 +142,7 @@ async function getEpubItemData(htmlPath: string): Promise<EpubContentOptions> {
     }
   }
 
-  const title = path.basename(folderPath);
+  var title = path.basename(folderPath);
 
   return {
     title: title,
