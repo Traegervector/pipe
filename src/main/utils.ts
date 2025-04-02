@@ -11,7 +11,7 @@ class FileUtil {
    * name 是下载后的文件名
    */
   public static async downloadFile(url: string, filepath: string, name: string): Promise<string> {
-    var mypath = path.resolve(filepath, name);
+    const mypath = path.resolve(filepath, name);
     // 文件存在不覆盖
     if (fs.existsSync(mypath)) {
       // return new Promise((resolve) => {
@@ -19,7 +19,7 @@ class FileUtil {
       // });
       return name;
     }
-    var writer = fs.createWriteStream(mypath);
+    const writer = fs.createWriteStream(mypath);
     await axios
       .get(url, {
         responseType: 'stream'
@@ -44,7 +44,7 @@ class StrUtil {
    */
   static widthExpression = /width:\s*(\d+px)/g;
   public static getStyleWidth(styleStr): string | null {
-    var widthResultArr = StrUtil.widthExpression.exec(styleStr);
+    const widthResultArr = StrUtil.widthExpression.exec(styleStr);
     if (widthResultArr && widthResultArr.length > 1) {
       return widthResultArr[1].replace('px', '');
     }
@@ -56,7 +56,7 @@ class StrUtil {
    */
   static cleanDirExpression = /^\.*?|\n|\\n|[\\\\/:*?"<>|]|\.*?$/gim;
   public static strToDirName(title: string): string {
-    var cleanTitle = title.replaceAll(StrUtil.cleanDirExpression, '');
+    const cleanTitle = title.replaceAll(StrUtil.cleanDirExpression, '');
     if (cleanTitle.length > 250) {
       return cleanTitle.substring(0, 250);
     }
@@ -78,14 +78,14 @@ class HttpUtil {
     if (url.indexOf('?') == -1) {
       return null;
     }
-    var query = url.split('?')[1];
-    var vars = query.split('&');
+    const query = url.split('?')[1];
+    const vars = query.split('&');
     for (let i = 0; i < vars.length; i++) {
-      var pair = vars[i].split('=');
+      const pair = vars[i].split('=');
       if (pair[0] == variable) {
         let result = '';
         for (let j = 1; j < pair.length; j++) {
-          var pairItem = pair[j];
+          const pairItem = pair[j];
           if (pairItem == '') {
             result += '=';
           } else {
@@ -101,12 +101,12 @@ class HttpUtil {
   // 从url中获取文件类型后缀
   // 例如 url = http://www.baidu.com/ddd.png?id=12.22
   public static getSuffByUrl(url: string): string | null {
-    var questIdx = url.lastIndexOf('?');
-    var dotIdx = url.lastIndexOf('.', questIdx > 0 ? questIdx : url.length);
+    const questIdx = url.lastIndexOf('?');
+    const dotIdx = url.lastIndexOf('.', questIdx > 0 ? questIdx : url.length);
     if (dotIdx <= 0) {
       return null;
     }
-    var suff = url.substring(dotIdx + 1, questIdx > 0 ? questIdx : url.length);
+    const suff = url.substring(dotIdx + 1, questIdx > 0 ? questIdx : url.length);
     if (suff?.length > 5) {
       return null;
     }
@@ -120,14 +120,14 @@ class DateUtil {
     if (typeof datetime === 'string') {
       timestamp = new Date(Date.parse(datetime));
     }
-    var fullYear: string = timestamp.getFullYear().toString();
-    var monthNum = timestamp.getMonth() + 1;
-    var month: string = monthNum.toString();
-    var date: string = timestamp.getDate().toString();
-    var hours: string = timestamp.getHours().toString();
-    var minutes: string = timestamp.getMinutes().toString();
-    var seconds: string = timestamp.getSeconds().toString();
-    var milliseconds: string = timestamp.getMilliseconds().toString();
+    const fullYear: string = timestamp.getFullYear().toString();
+    const monthNum = timestamp.getMonth() + 1;
+    const month: string = monthNum.toString();
+    const date: string = timestamp.getDate().toString();
+    const hours: string = timestamp.getHours().toString();
+    const minutes: string = timestamp.getMinutes().toString();
+    const seconds: string = timestamp.getSeconds().toString();
+    const milliseconds: string = timestamp.getMilliseconds().toString();
     formatting = this.parse(formatting, /[y|Y]+/, fullYear);
     formatting = this.parse(formatting, /[M]+/, month, '00');
     formatting = this.parse(formatting, /[d|D]+/, date, '00');
@@ -141,9 +141,9 @@ class DateUtil {
   private static parse(formatting: string, pattern: RegExp, val: string, min?: string): string {
     while (pattern.test(formatting)) {
       pattern.exec(formatting)?.forEach((value) => {
-        var length = value.length;
-        var valLen = val.length;
-        var number = valLen - length;
+        const length = value.length;
+        const valLen = val.length;
+        const number = valLen - length;
         let element = val.substring(number);
         if (min) {
           element = min.substring(element.length) + element;
