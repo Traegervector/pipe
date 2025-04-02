@@ -4,8 +4,8 @@ import logger from 'electron-log';
 logger.transports.file.level = 'info';
 logger.transports.file.maxSize = 1002430; // 10M
 logger.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}]{scope} {text}';
-let date = new Date();
-let fileName = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + '.log';
+const date = new Date();
+const fileName = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + '.log';
 logger.transports.file.fileName = fileName;
 
 export default {
